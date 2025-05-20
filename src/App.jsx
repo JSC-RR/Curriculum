@@ -1,9 +1,8 @@
-import React, { useEffect } from 'react';
-import { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { TypeAnimation } from 'react-type-animation';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
 import 'prismjs/components/prism-python';
@@ -14,6 +13,7 @@ import 'prismjs/components/prism-sql';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
   
   useEffect(() => {
     Prism.highlightAll();
@@ -27,37 +27,112 @@ function App() {
     { id: 'contacto', title: 'Contacto' },
   ];
 
-  const codeExamples = {
-    python: `# Python Security Scanner
-def scan_network(target):
-    print(f"Scanning {target}...")
-    vulnerabilities = []
+  const projects = [
+    {
+      id: 1,
+      title: "Sistema de Monitorización de Red",
+      icon: "🔍",
+      summary: "Sistema avanzado de monitorización de red con detección de intrusiones y análisis de tráfico en tiempo real.",
+      description: "Implementación de un sistema completo de monitorización de red utilizando Python y herramientas especializadas. El sistema incluye detección de intrusiones, análisis de tráfico en tiempo real y generación de informes automatizados.",
+      technologies: ["Python", "Scapy", "SQLite", "Docker"],
+      code: {
+        python: `
+# Network Monitor System
+class NetworkMonitor:
+    def __init__(self):
+        self.interfaces = []
+        self.alerts = []
     
-    # Network scanning logic
-    return vulnerabilities`,
-    javascript: `// Automated Backup System
-async function backupData(source, destination) {
-  try {
-    const data = await readSource(source);
-    await encrypt(data);
-    await writeDestination(destination);
-    console.log('Backup completed');
-  } catch (error) {
-    console.error('Backup failed:', error);
-  }
-}`,
-    java: `// Network Monitor
-public class NetworkMonitor {
-    public void startMonitoring() {
-        new Thread(() -> {
-            while(true) {
-                checkNetworkStatus();
-                Thread.sleep(1000);
-            }
-        }).start();
+    def start_monitoring(self):
+        """Initialize network monitoring"""
+        print("Starting network monitoring...")
+        self.scan_interfaces()
+        self.analyze_traffic()
+    
+    def scan_interfaces(self):
+        """Scan available network interfaces"""
+        for interface in get_interfaces():
+            self.interfaces.append(interface)
+            
+    def analyze_traffic(self):
+        """Analyze network traffic for suspicious activity"""
+        sniff(prn=self.packet_callback, store=0)
+        
+    def packet_callback(self, packet):
+        """Process each captured packet"""
+        if IP in packet:
+            self.check_suspicious_activity(packet)
+`
+      }
+    },
+    {
+      id: 2,
+      title: "Automatización de Backups",
+      icon: "💾",
+      summary: "Sistema automatizado de copias de seguridad con cifrado y verificación de integridad.",
+      description: "Desarrollo de un sistema de backups automatizado que realiza copias incrementales, implementa cifrado de datos y verifica la integridad de los archivos. Incluye notificaciones por correo y registro detallado de operaciones.",
+      technologies: ["Python", "Cryptography", "PostgreSQL"],
+      code: {
+        python: `
+# Automated Backup System
+class BackupManager:
+    def __init__(self, source_dir, backup_dir):
+        self.source = source_dir
+        self.backup = backup_dir
+        self.crypto = CryptoHandler()
+    
+    async def create_backup(self):
+        """Create encrypted backup"""
+        files = self.scan_directory()
+        for file in files:
+            if self.needs_backup(file):
+                encrypted = self.crypto.encrypt_file(file)
+                await self.store_backup(encrypted)
+                
+    def verify_integrity(self):
+        """Verify backup integrity"""
+        for backup in self.get_backups():
+            if not self.check_checksum(backup):
+                self.send_alert(f"Integrity check failed: {backup}")
+`
+      }
+    },
+    {
+      id: 3,
+      title: "Análisis de Vulnerabilidades",
+      icon: "🛡️",
+      summary: "Scanner de vulnerabilidades con reportes detallados y recomendaciones de seguridad.",
+      description: "Herramienta de análisis de vulnerabilidades que realiza escaneos profundos de sistemas y redes, genera reportes detallados y proporciona recomendaciones específicas de seguridad basadas en las mejores prácticas.",
+      technologies: ["Python", "Nmap", "SQLite", "Docker"],
+      code: {
+        python: `
+# Vulnerability Scanner
+class VulnerabilityScanner:
+    def __init__(self):
+        self.vulnerabilities = []
+        self.scan_results = {}
+    
+    def scan_target(self, target):
+        """Perform vulnerability scan"""
+        print(f"Scanning {target} for vulnerabilities...")
+        ports = self.port_scan(target)
+        services = self.service_detection(ports)
+        vulns = self.vulnerability_check(services)
+        return self.generate_report(vulns)
+        
+    def vulnerability_check(self, services):
+        """Check for known vulnerabilities"""
+        for service in services:
+            if self.is_vulnerable(service):
+                self.vulnerabilities.append({
+                    'service': service,
+                    'severity': self.assess_severity(service),
+                    'recommendation': self.get_recommendation(service)
+                })
+`
+      }
     }
-}`
-  };
+  ];
 
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
@@ -82,6 +157,85 @@ public class NetworkMonitor {
       </motion.div>
     );
   };
+
+  const ProjectCard = ({ project, onClick }) => (
+    <motion.div
+      className="bg-gray-800 p-6 rounded-lg shadow-xl border border-purple-500/20 hover:border-purple-500/40 transition-all cursor-pointer"
+      whileHover={{ scale: 1.02 }}
+      onClick={() => onClick(project)}
+    >
+      <div className="flex items-center gap-3 mb-4">
+        <span className="text-2xl">{project.icon}</span>
+        <h3 className="text-xl font-semibold text-purple-500">{project.title}</h3>
+      </div>
+      <p className="text-gray-300 mb-4">{project.summary}</p>
+      <div className="flex flex-wrap gap-2">
+        {project.technologies.map((tech, index) => (
+          <span
+            key={index}
+            className="px-2 py-1 bg-purple-500/10 text-purple-300 rounded-full text-sm"
+          >
+            {tech}
+          </span>
+        ))}
+      </div>
+      <ChevronDownIcon className="h-5 w-5 text-purple-500 mt-4" />
+    </motion.div>
+  );
+
+  const ProjectModal = ({ project, onClose }) => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="bg-gray-800 p-6 rounded-lg shadow-xl border border-purple-500/20 max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-3">
+            <span className="text-3xl">{project.icon}</span>
+            <h3 className="text-2xl font-semibold text-purple-500">{project.title}</h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-white transition-colors"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
+        </div>
+        
+        <div className="prose prose-invert max-w-none">
+          <p className="text-gray-300 mb-6">{project.description}</p>
+          
+          <h4 className="text-lg font-semibold text-purple-400 mb-4">Tecnologías utilizadas:</h4>
+          <div className="flex flex-wrap gap-2 mb-6">
+            {project.technologies.map((tech, index) => (
+              <span
+                key={index}
+                className="px-3 py-1 bg-purple-500/10 text-purple-300 rounded-full"
+              >
+                {tech}
+              </span>
+            ))}
+          </div>
+
+          <h4 className="text-lg font-semibold text-purple-400 mb-4">Código de ejemplo:</h4>
+          <pre className="rounded-lg overflow-x-auto">
+            <code className="language-python">
+              {project.code.python}
+            </code>
+          </pre>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white">
@@ -245,23 +399,27 @@ public class NetworkMonitor {
             <h2 className="text-3xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-500">
               Proyectos
             </h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {Object.entries(codeExamples).map(([language, code]) => (
-                <div key={language} className="bg-gray-800 p-6 rounded-lg shadow-xl border border-purple-500/20">
-                  <h3 className="text-xl font-semibold mb-4 text-purple-500 capitalize">
-                    {language}
-                  </h3>
-                  <pre className="rounded-lg overflow-x-auto">
-                    <code className={`language-${language}`}>
-                      {code}
-                    </code>
-                  </pre>
-                </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.map(project => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onClick={setSelectedProject}
+                />
               ))}
             </div>
           </div>
         </section>
       </FadeInSection>
+
+      <AnimatePresence>
+        {selectedProject && (
+          <ProjectModal
+            project={selectedProject}
+            onClose={() => setSelectedProject(null)}
+          />
+        )}
+      </AnimatePresence>
 
       <FadeInSection>
         <section id="habilidades" className="py-20">
